@@ -1,6 +1,7 @@
 (cl:defpackage :thierry-technologies.com/2011/09/clone
   (:use :cl :cl-utilities)
-  (:nicknames :cl-clone))
+  (:nicknames :cl-clone)
+  (:export #:clone #:shared-clone))
 
 (in-package :thierry-technologies.com/2011/09/clone)
 
