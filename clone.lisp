@@ -1,5 +1,5 @@
 (cl:defpackage :thierry-technologies.com/2011/09/clone
-  (:use :cl)
+  (:use :cl :cl-utilities)
   (:nicknames :cl-clone))
 
 (in-package :thierry-technologies.com/2011/09/clone)
