@@ -30,3 +30,24 @@ Basic cloning helpers for cons cells
 
 (defun shallow-clone-tree (object)
   (deep-clone-tree object #'identity))
+
+
+#|
+
+Basic cloning helpers for arrays
+
+|#
+
+(defun deep-clone-array (object fall-back)
+  (let ((copy (make-array (array-dimensions object)
+			  :element-type (array-element-type object)
+			  :adjustable (adjustable-array-p object)
+			  :fill-pointer (handler-case
+					    (fill-pointer object)
+					  (type-error () nil)))))
+    (dotimes (index (apply #'* (array-dimensions object)) copy)
+      (setf (row-major-aref copy index)
+	    (funcall fall-back (row-major-aref object index))))))
+
+(defun shallow-clone-array (object)
+  (deep-clone-array object #'identity))
