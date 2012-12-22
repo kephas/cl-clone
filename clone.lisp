@@ -1,31 +1,19 @@
-(cl:defpackage :thierry-technologies.com/2011/09/clone
-  (:use :cl :alexandria)
-  (:nicknames :cl-clone)
-  (:export #:clone #:shared-clone))
-
-(in-package :thierry-technologies.com/2011/09/clone)
+(in-package :thierry-technologies.com/2011.09.clone)
 
 #| Generic functions for object cloning |#
 
-(defgeneric clone (object))
-
-(defgeneric shared-clone (object clone)) ; users are expected to define :after methods on it
+(defgeneric clone (object next))
 
 
-#| Base cases |#
+#| Shallow and deep cloning |#
 
-(defmethod clone (object)
-  (let ((clone (make-instance (class-of object))))
-    (shared-clone object clone)
-    clone))
+(defun shallow-clone (object)
+  (clone object #'identity))
 
-(defmethod shared-clone (object clone))
+(defun deep-clone (object)
+  (clone object #'deep-clone))
 
-
-#| Shallow cloning for some built-in classes |#
-
-(defmethod clone ((object list))
-  (copy-list object))
-
-(defmethod clone ((object array))
-  (copy-array object))
+(defun level-clone (object level)
+  (if (zerop level)
+      object
+      (clone object (lambda (x) (level-clone x (1- level))))))

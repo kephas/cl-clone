@@ -1,44 +1,30 @@
-#|
-
-Basic cloning helpers for cons cells
-
-|#
-
-(defun deep-clone-pair (object fall-back)
-  (cons (funcall fall-back (car object))
-	(funcall fall-back (cdr object))))
-
-(defun shallow-clone-pair (object)
-  (deep-clone-pair object #'identity))
+(in-package :thierry-technologies.com/2011.09.clone)
 
 
-(defun deep-clone-list (object fall-back)
-  (when object
-    (cons (funcall fall-back (first object)) (shallow-clone-list (rest object) fall-back))))
+#| Cloning for builin atoms |#
 
-(defun shallow-clone-list (object)
-  (deep-clone-list object #'identity))
+(defmethod clone ((object symbol) next)
+  (if (symbol-package object)
+      object
+      (make-symbol (symbol-name object))))
 
+(defmethod clone ((object number) next)
+  (declare (ignore next))
+  object)
 
-(defun deep-clone-tree (object fall-back)
-  (labels ((clone (part)
-	     (typecase part
-	       (cons (deep-clone-tree part fall-back))
-	       (t (funcall fall-back part)))))
-    (when object
-      (cons (clone (car object)) (clone (cdr object))))))
-
-(defun shallow-clone-tree (object)
-  (deep-clone-tree object #'identity))
+(defmethod clone ((object character) next)
+  (declare (ignore next))
+  object)
 
 
-#|
+#| Cloning for some built-in sequences |#
 
-Basic cloning helpers for arrays
+  ; although they can be used for different things, we consider that
+  ; the default use of cons cells are lists
+(defmethod clone ((object cons) next)
+  (mapcar next object))
 
-|#
-
-(defun deep-clone-array (object fall-back)
+(defmethod clone ((object array) next)
   (let ((copy (make-array (array-dimensions object)
 			  :element-type (array-element-type object)
 			  :adjustable (adjustable-array-p object)
@@ -47,7 +33,25 @@ Basic cloning helpers for arrays
 					  (type-error () nil)))))
     (dotimes (index (apply #'* (array-dimensions object)) copy)
       (setf (row-major-aref copy index)
-	    (funcall fall-back (row-major-aref object index))))))
+	    (funcall next (row-major-aref object index))))))
 
-(defun shallow-clone-array (object)
-  (deep-clone-array object #'identity))
+
+#| Cloning for CLOS objects |#
+
+(defgeneric slot-clone (slot source target next))
+
+(defmethod slot-clone ((slot closer-mop:effective-slot-definition) source target next)
+  (let ((name (closer-mop:slot-definition-name slot)))
+    (setf (slot-value target name) (funcall next (slot-value source name)))))
+
+(defgeneric shared-clone (object clone))
+(defmethod shared-clone (object clone))
+
+(defmethod clone ((object standard-object) next)
+  (let* ((class (class-of object))
+	 (clone (make-instance class))
+	 (slots (closer-mop:class-slots class)))
+    (loop for slot in slots
+       do (slot-clone slot object clone next))
+    (shared-clone object clone)
+    clone))
