@@ -8,5 +8,5 @@
   :version "1.0"
   :author "Pierre Thierry <pierre@nothos.net>"
   :licence "GPL"
-  :depends-on ("cl-utilities")
+  :depends-on ("alexandria")
   :components ((:file "clone")))

@@ -1,5 +1,5 @@
 (cl:defpackage :thierry-technologies.com/2011/09/clone
-  (:use :cl :cl-utilities)
+  (:use :cl :alexandria)
   (:nicknames :cl-clone)
   (:export #:clone #:shared-clone))
 
