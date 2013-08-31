@@ -35,6 +35,20 @@
       (setf (row-major-aref copy index)
 	    (funcall next (row-major-aref object index))))))
 
+#| Cloning for hash tables |#
+
+(defmethod clone ((object hash-table) next)
+  (let ((copy (make-hash-table
+	       :test (hash-table-test object)
+	       :size (hash-table-size object)
+	       :rehash-size (hash-table-rehash-size object)
+	       :rehash-threshold (hash-table-rehash-threshold object)
+	       #+sbcl :weakness #+sbcl (sb-ext:hash-table-weakness object))))
+    (maphash (lambda (k v)
+	       (setf (gethash k copy) (funcall next v)))
+	     object)
+    copy))
+
 
 #| Cloning for CLOS objects |#
 
