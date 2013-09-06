@@ -16,6 +16,9 @@
   (declare (ignore next))
   object)
 
+(defmethod clone ((object function) next)
+  (declare (ignore next))
+  object)
 
 #| Cloning for some built-in sequences |#
 
