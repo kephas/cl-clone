@@ -48,7 +48,7 @@
 	       :rehash-threshold (hash-table-rehash-threshold object)
 	       #+sbcl :weakness #+sbcl (sb-ext:hash-table-weakness object))))
     (maphash (lambda (k v)
-	       (setf (gethash k copy) (funcall next v)))
+	       (setf (gethash (funcall next k) copy) (funcall next v)))
 	     object)
     copy))
 
